@@ -1,0 +1,87 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+string input;
+vector< pair<string, string> > LT;
+
+
+//Checks if the current symbol in the line is a special symbol
+bool isSymbol(char x){
+	
+	return x == '(' || x == ')' || x == '=' || x == '+' || x == '-' || x == '*' || x == '/' || x == ';';
+	
+}
+
+//Checks if the fragment we have is a number or not..
+bool isNum(string y){
+	return y[0] >= '0' && y[0] <= '9';
+}
+
+// if the current character in the input is a special symbol, push it to the vector
+void push_symbol(char x){
+	switch(x){
+		case '(': LT.push_back({"(", "LEFT_PARENTHESES"}); break;
+		case ')': LT.push_back({")", "RIGHT_PARENTHESES"}); break;
+		case '+': LT.push_back({"+", "ADD_OP"}); break;
+		case '-': LT.push_back({"-", "SUB_OP"}); break;
+		case '*': LT.push_back({"*", "MULT_OP"}); break;
+		case '/': LT.push_back({"/", "DIV_OP"}); break;
+		case '=': LT.push_back({"=", "EQUAL_OP"}); break;
+		case ';': LT.push_back({";", "SEMICOLON"}); break;
+	}
+}
+
+/* 
+	if the fragment we have has a number in the beginning of it
+	then there are two options:
+		1. there's a few digits in the beginning then letters
+		2. it's a complete number.
+		
+	the next function performs a checker for the first one and pushes the number (if  available)
+	if the fragment starts with a letter. it avoids pushing the number and then goes to push-
+	the string to the vector.
+*/
+void push(string y){
+	string z;
+	int i;
+	
+	for(i = 0 ; i < y.length() ; ++i)	if(!isalpha(y[i])) z+=y[i]; else break;
+	if(z.length()) LT.push_back({z, "NUMBER"});
+	
+	if(z.length() != y.length()){
+		i = z.length()? z.length()-1 : 0;
+		z = "";
+		for(i ; i < y.length() ; ++i)	z += y[i];
+		LT.push_back({z, "IDENT"});
+	}
+}
+
+//moves along the input line and starts extracting a few fragment
+//fragments may be of length 1 up to the whole line.
+//the technique used is basically getting an empty string and starts filling it
+//until a special character is found, then i basically "Flush" the temporary string into the vector-
+//with it's token and resets it to "".
+void lex(){
+	string y = "";
+	
+	for(int i = 0 ; i < input.length() ; ++i){
+		if(isSymbol(input[i])){
+			if(y != "")	push(y);
+			y = "";
+			
+			push_symbol(input[i]);
+			continue;
+		}
+		y += input[i];
+	}
+	
+}
+
+int main() {
+	
+	getline(cin, input);
+	lex();
+	
+	for(auto it: LT)	cout << "lexeme: " << it.first << "\t      " << "token: " << it.second << endl;
+	return 0;
+}
